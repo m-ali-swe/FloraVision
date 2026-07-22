@@ -1,4 +1,17 @@
-streamlit
-tensorflow
-numpy
-Pillow
+# Core Machine Learning & Data Science
+tensorflow>=2.15.0
+numpy>=1.24.0
+pandas>=2.0.0
+Pillow>=10.0.0
+
+# Interactive Web Application
+streamlit>=1.30.0
+
+# REST API Framework
+fastapi>=0.109.0
+uvicorn>=0.27.0
+python-multipart>=0.0.6
+
+# Quality Assurance & Testing
+pytest>=8.0.0
+httpx>=0.26.0

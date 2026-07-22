@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  # FastAPI REST Service
+  api:
+    build: .
+    container_name: floravision-api
+    ports:
+      - "8000:8000"
+    command: uvicorn api:app --host 0.0.0.0 --port 8000
+    restart: unless-stopped
+
+  # Streamlit Interactive Web Application
+  web:
+    build: .
+    container_name: floravision-web
+    ports:
+      - "8501:8501"
+    command: streamlit run app.py --server.port 8501 --server.address 0.0.0.0
+    restart: unless-stopped
+    depends_on:
+      - api
