@@ -5,7 +5,6 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.30%2B-FF4B4B.svg?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109%2B-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 An enterprise-grade **Computer Vision & Digital Image Processing (DIP)** application built on top of a 3-layer Convolutional Neural Network (CNN). The system offers multi-interface accessibility including an interactive **Streamlit Web Dashboard**, a production-ready **FastAPI REST API**, a **Command-Line Interface (CLI)**, and containerized deployment configurations.
 
