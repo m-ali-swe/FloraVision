@@ -1,181 +1,245 @@
-# FloraVision: TensorFlow Flower Classifier & Digital Image Processing Suite
+# 🌸 FloraVision — Deep Learning Flower Classification & DIP Suite
 
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![TensorFlow 2.x](https://img.shields.io/badge/TensorFlow-2.15%2B-FF6F00.svg?logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.30%2B-FF4B4B.svg?logo=streamlit&logoColor=white)](https://streamlit.io/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.109%2B-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com/)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.15-FF6F00?style=for-the-badge&logo=tensorflow)](https://www.tensorflow.org/)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.109-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.30-FF4B4B?style=for-the-badge&logo=streamlit)](https://streamlit.io/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
+[![Pytest](https://img.shields.io/badge/Pytest-Automated_Tests-0A9EDC?style=for-the-badge&logo=pytest)](https://docs.pytest.org/)
 
-An enterprise-grade **Computer Vision & Digital Image Processing (DIP)** application built on top of a 3-layer Convolutional Neural Network (CNN). The system offers multi-interface accessibility including an interactive **Streamlit Web Dashboard**, a production-ready **FastAPI REST API**, a **Command-Line Interface (CLI)**, and containerized deployment configurations.
+**FloraVision** is a production-grade **Computer Vision & Digital Image Processing (DIP)** platform powered by **TensorFlow 2.15**, **Keras**, **FastAPI**, **Streamlit**, and **Docker**. 
 
----
-
-## 🌟 Key Features
-
-- **🌸 Multi-Class Flower Recognition**: Classifies flower species into 5 distinct categories (*Daisy*, *Dandelion*, *Roses*, *Sunflowers*, *Tulips*) with Softmax probability distributions.
-- **🔬 Digital Image Processing (DIP) Studio**: Performs RGB channel decomposition, grayscale luminance conversion, spatial gradient edge detection, and statistical image profiling.
-- **💻 Interactive Web Dashboard**: Dark-mode Streamlit UI featuring top-K probability breakdown bars, interactive DIP labs, and botanical metadata.
-- **⚡ Production REST API**: FastAPI backend with OpenAPI (Swagger) documentation, health check endpoints, and single/batch inference endpoints.
-- **🛠️ Command-Line Interface (CLI)**: Lightweight command-line utility for single image and folder-level batch processing with JSON export options.
-- **🐳 Docker & Orchestration**: Containerized setup via `Dockerfile` and `docker-compose.yml` for cloud deployment (AWS ECS, GCP Cloud Run).
-- **🧪 Unit & Integration Test Suite**: Robust `pytest` coverage for image transformation pipelines, model predictions, and API controllers.
+The system utilizes a custom **12-Layer Convolutional Neural Network (CNN)** (`sequential_3`, 7.97M total parameters) pre-trained on botanical image datasets to classify 5 flower species (*Daisy, Dandelion, Roses, Sunflowers, Tulips*). It provides multi-interface execution via an interactive Streamlit Web Studio, a high-throughput FastAPI REST service, and a CLI utility.
 
 ---
 
-## 🏗️ System Architecture
+## 🔬 CNN Model Architecture & Layer Topology
+
+The deep learning inference engine (`src/classifier.py`) loads a trained Keras model (`flower_model.keras`) with an input shape of `(180, 180, 3)` (RGB). The 12-layer sequential CNN topology extracts spatial features through progressive 2D convolutions and max-pooling filters:
+
+| Layer Index | Layer Name | Type | Layer Specifications / Operations | Output Tensor Shape | Param # |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Layer 0** | `sequential_2` | Data Augmentation | Random horizontal flipping & random rotation | `(None, 180, 180, 3)` | `0` |
+| **Layer 1** | `rescaling_3` | Normalization | Pixel intensity rescaling (`1 / 255`) | `(None, 180, 180, 3)` | `0` |
+| **Layer 2** | `conv2d_6` | Conv2D | 16 Filters, 3x3 Kernel, ReLU Activation | `(None, 180, 180, 16)` | `448` |
+| **Layer 3** | `max_pooling2d_6` | MaxPooling2D | 2x2 Spatial Downsampling Pool | `(None, 90, 90, 16)` | `0` |
+| **Layer 4** | `conv2d_7` | Conv2D | 32 Filters, 3x3 Kernel, ReLU Activation | `(None, 90, 90, 32)` | `4,640` |
+| **Layer 5** | `max_pooling2d_7` | MaxPooling2D | 2x2 Spatial Downsampling Pool | `(None, 45, 45, 32)` | `0` |
+| **Layer 6** | `conv2d_8` | Conv2D | 64 Filters, 3x3 Kernel, ReLU Activation | `(None, 45, 45, 64)` | `18,496` |
+| **Layer 7** | `max_pooling2d_8` | MaxPooling2D | 2x2 Spatial Downsampling Pool | `(None, 22, 22, 64)` | `0` |
+| **Layer 8** | `dropout` | Dropout | Spatial Dropout Regularization | `(None, 22, 22, 64)` | `0` |
+| **Layer 9** | `flatten_2` | Flatten | Multi-Dimensional Tensor Flattening | `(None, 30976)` | `0` |
+| **Layer 10** | `dense_4` | Dense | Fully Connected Layer (128 Units, ReLU) | `(None, 128)` | `3,965,056` |
+| **Layer 11** | `outputs` | Dense (Softmax) | Output Classification (5 Botanical Classes) | `(None, 5)` | `645` |
+
+> 📊 **Model Metrics**: **Total Parameters**: `7,978,572` (30.44 MB) | **Trainable Parameters**: `3,989,285` (15.22 MB)
+
+---
+
+## 🏗️ High-Level System Architecture
 
 ```mermaid
 graph TD
-    A[Input Image / Batch Upload] --> B[Digital Image Processing Engine]
-    B -->|Channel Split & Resizing 180x180| C[Tensor Processing]
-    C --> D[TensorFlow CNN Model]
-    D -->|Conv2D + MaxPool Layers| E[Dense & Softmax Activation]
-    E --> F[Probability Distribution & Top-K Ranking]
-    
-    F --> G1[Streamlit Web UI]
-    F --> G2[FastAPI REST Server]
-    F --> G3[Command Line CLI]
+    subgraph Client Interfaces ["🌐 Multi-Interface Execution Layer"]
+        UI["Streamlit Web Studio\n(app.py)"]
+        API["FastAPI REST Service\n(api.py)"]
+        CLI["CLI Utility\n(cli.py)"]
+    end
+
+    subgraph Preprocessing ["🖼️ Digital Image Processing (src/image_processor.py)"]
+        ImageLoad["load_image()\n(PIL RGB Conversion)"]
+        ResizeTensor["process_image_for_inference()\n(BILINEAR 180x180 Resample)"]
+        ExpandBatch["np.expand_dims()\nTensor Shape: (1, 180, 180, 3)"]
+        
+        ImageLoad --> ResizeTensor --> ExpandBatch
+    end
+
+    subgraph InferenceEngine ["🧠 TensorFlow Keras Engine (src/classifier.py)"]
+        KerasModel["FlowerClassifier Model\n(flower_model.keras - sequential_3)"]
+        RawPredict["model.predict(batch_array)"]
+        SoftmaxCalc["tf.nn.softmax()\n(Probability Distribution)"]
+        TopKRank["Top-K Ranking & Color Mapping"]
+        
+        KerasModel --> RawPredict --> SoftmaxCalc --> TopKRank
+    end
+
+    subgraph OutputPayload ["📊 Botanical Payload Synthesis"]
+        JSONResult["Prediction Payload\n- Top Class & Confidence %\n- Top-K Ranked Classes\n- Scientific Metadata (Family/Taxonomy)\n- Color Tokens & RGB Distribution"]
+    end
+
+    UI --> ImageLoad
+    API --> ImageLoad
+    CLI --> ImageLoad
+
+    ExpandBatch --> KerasModel
+    TopKRank --> JSONResult
+    JSONResult --> UI
+    JSONResult --> API
+    JSONResult --> CLI
 ```
 
 ---
 
-## 📊 Model Specifications
+## ⚡ Engineering Challenges & Technical Solutions
 
-| Parameter | Value / Detail |
-| :--- | :--- |
-| **Model Type** | Sequential Convolutional Neural Network (CNN) |
-| **Input Shape** | `(180, 180, 3)` RGB Tensor |
-| **Preprocessing** | Data Augmentation & `1/255` Rescaling Layer |
-| **Feature Extraction** | 3 x `Conv2D` (16, 32, 64 filters) + `MaxPooling2D` |
-| **Regularization** | `Dropout (0.2)` Layer |
-| **Classification Head** | Dense (128 units, ReLU) -> Dense (5 units, Softmax) |
-| **Total Parameters** | **7,978,572** (~30.4 MB) |
+### 1. Lazy Singleton Model Instantiation & Memory Caching
+* **Challenge**: Loading a 47.9 MB `.keras` deep learning model on every HTTP request or Streamlit page re-render incurs massive CPU overhead and memory duplication.
+* **Solution**: Implemented a singleton loading pattern inside `api.py` (`get_classifier_instance`) and leveraged Streamlit's `@st.cache_resource` decorator in `app.py`. The model is loaded into RAM once upon application cold-start and reused concurrently across all subsequent inference requests.
+
+### 2. Multi-Input Image Standardization Pipeline
+* **Challenge**: Supporting file paths (`str`), raw uploaded byte streams (`bytes`), and active `PIL.Image` objects across different interfaces without causing tensor shape mismatches or memory leaks.
+* **Solution**: Engineered `load_image()` in `src/image_processor.py`. It inspects input types dynamically, uses `io.BytesIO` for binary uploads, enforces standard 3-channel `RGB` color conversion, resamples images using bilinear interpolation to `(180, 180)`, and expands tensor dimensions to yield float32 arrays of shape `(1, 180, 180, 3)`.
+
+### 3. Native Spatial Gradient & Color Channel Decomposition (DIP Lab)
+* **Challenge**: Providing digital image processing diagnostics (channel decomposition, edge detection) without relying on heavy external C++ libraries like OpenCV.
+* **Solution**: Developed lightweight NumPY spatial algorithms in `src/image_processor.py`. `analyze_image_channels()` extracts individual Red, Green, Blue, and Luminance arrays using standard ITU-R 601-2 luminance weights (`0.2989 R + 0.5870 G + 0.1140 B`). `compute_edge_map()` implements a Sobel-like spatial difference gradient using `np.diff` matrix operations to render binary edge maps directly in Streamlit.
 
 ---
 
-## 📁 Project Structure
+## 📊 API Reference & Schemas
+
+### Response Payload Structure (`POST /predict`)
+
+```json
+{
+  "predicted_class": "sunflowers",
+  "confidence": 0.9854,
+  "confidence_percentage": 98.54,
+  "metadata": {
+    "scientific_name": "Helianthus annuus",
+    "family": "Asteraceae",
+    "description": "Tall annual plant with prominent dark central disk florets surrounded by vivid yellow petals."
+  },
+  "all_probabilities": {
+    "daisy": 0.0012,
+    "dandelion": 0.0084,
+    "roses": 0.0021,
+    "sunflowers": 0.9854,
+    "tulips": 0.0029
+  },
+  "top_k": [
+    {
+      "class_name": "sunflowers",
+      "confidence": 0.9854,
+      "percentage": 98.54,
+      "color": "#FB8C00"
+    },
+    {
+      "class_name": "dandelion",
+      "confidence": 0.0084,
+      "percentage": 0.84,
+      "color": "#FBC02D"
+    },
+    {
+      "class_name": "tulips",
+      "confidence": 0.0029,
+      "percentage": 0.29,
+      "color": "#8E24AA"
+    }
+  ]
+}
+```
+
+---
+
+## 📁 Repository Architecture
 
 ```
 tf-flower-classifier/
-├── app.py                   # Streamlit Web UI Application
-├── api.py                   # FastAPI REST API Backend
-├── cli.py                   # Command Line Interface Tool
-├── flower_model.keras       # Trained TensorFlow/Keras Weights Model
-├── requirements.txt         # Project Dependencies
-├── Dockerfile               # Container Image Build File
-├── docker-compose.yml       # Container Orchestration
-├── .github/
-│   └── workflows/
-│       └── ci.yml           # GitHub Actions CI Workflow
-├── src/                     # Core Source Package
-│   ├── __init__.py
-│   ├── config.py            # System Configurations & Class Metadata
-│   ├── classifier.py        # FlowerClassifier Inference Engine
-│   └── image_processor.py   # DIP Transforms & Image Utilities
-└── tests/                   # Automated PyTest Suite
-    ├── __init__.py
-    ├── test_classifier.py   # Classifier Unit Tests
-    ├── test_image_processor.py # DIP Unit Tests
-    └── test_api.py          # FastAPI Integration Tests
+├── src/                          # Core Python Packages
+│   ├── classifier.py             # FlowerClassifier engine & Softmax Top-K calculation
+│   ├── image_processor.py        # DIP algorithms, channel extraction & tensor resizing
+│   └── config.py                 # Hyperparameters, botanical metadata & color tokens
+├── tests/                        # Automated Pytest Suite
+│   ├── test_api.py               # FastAPI route integration tests
+│   ├── test_classifier.py        # Model inference unit tests
+│   └── test_image_processor.py   # Preprocessing & image transformation tests
+├── api.py                        # FastAPI REST API service
+├── app.py                        # Streamlit Interactive Web Studio & DIP Lab
+├── cli.py                        # Command-line interface inference utility
+├── flower_model.keras            # Trained 12-layer Keras CNN model weights (47.9 MB)
+├── Dockerfile                    # Container build configuration
+├── docker-compose.yml            # Multi-service orchestration
+├── requirements.txt              # Dependency specifications
+└── README.md
 ```
 
 ---
 
-## 🚀 Quick Start Guide
+## 🛠️ Local Development & Deployment Setup
 
-### 1. Prerequisites & Installation
+### Prerequisites
+- **Python**: `3.11+`
+- **Pip**: Latest version
 
-Clone the repository and set up a Python virtual environment:
+---
+
+### 1. Virtual Environment Setup & Dependencies
 
 ```bash
-# Clone Repository
+# Clone the repository
 git clone https://github.com/your-username/tf-flower-classifier.git
 cd tf-flower-classifier
 
-# Create & Activate Virtual Environment
+# Create virtual environment
 python -m venv venv
-# On Windows:
-venv\Scripts\activate
+
+# Activate environment
+# On Windows (PowerShell):
+.\venv\Scripts\activate
 # On Linux/macOS:
 source venv/bin/activate
 
-# Install Dependencies
+# Install required packages
 pip install -r requirements.txt
 ```
 
 ---
 
-### 2. Launch Interactive Web App (Streamlit)
-
-Run the dashboard locally:
+### 2. Running the Interactive Streamlit Web Studio
 
 ```bash
 streamlit run app.py
 ```
-Open `http://localhost:8501` in your web browser.
+Open [http://localhost:8501](http://localhost:8501) in your browser.
 
 ---
 
-### 3. Launch REST API Server (FastAPI)
-
-Start the production API server:
+### 3. Running the FastAPI REST Service
 
 ```bash
 uvicorn api:app --reload --port 8000
 ```
-- Interactive Swagger API Docs: `http://localhost:8000/docs`
+- API Base Endpoint: `http://localhost:8000`
+- Swagger OpenAPI Docs: `http://localhost:8000/docs`
 - ReDoc Documentation: `http://localhost:8000/redoc`
 
-#### Example API Request (cURL):
+---
+
+### 4. Running CLI Inference
 
 ```bash
-curl -X POST "http://localhost:8000/predict" \
-     -H "accept: application/json" \
-     -H "Content-Type: multipart/form-bytes" \
-     -F "file=@sample_flower.jpg"
+# Predict a single image with top-3 rankings
+python cli.py predict path/to/flower.jpg --top-k 3
+
+# View model architecture summary via CLI
+python cli.py info
 ```
 
 ---
 
-### 4. Command Line Tool (CLI Usage)
+### 5. Automated Test Suite (`pytest`)
 
-Classify a single image:
 ```bash
-python cli.py --image path/to/rose.jpg --top-k 3
-```
-
-Process an entire directory of images and export JSON:
-```bash
-python cli.py --dir path/to/flower_folder --json --output results.json
+pytest -v
 ```
 
 ---
 
-### 5. Docker Deployment
-
-Build and run using Docker Compose:
+### 6. Docker Deployment
 
 ```bash
+# Build and run containerized application
 docker-compose up --build
 ```
-- Streamlit Web Dashboard: `http://localhost:8501`
-- FastAPI REST Service: `http://localhost:8000`
-
----
-
-### 6. Running Unit Tests
-
-Execute the automated pytest suite:
-
-```bash
-pytest tests/ -v
-```
-
----
-
-## 💼 Highlights
-
-- **Deep Learning Pipeline Development**: Engineered an end-to-end computer vision pipeline using TensorFlow/Keras to perform 5-class flower classification with ~8.0M parameters.
-- **Digital Image Processing Integration**: Developed custom preprocessing and feature extraction modules for spatial gradient edge detection, color channel isolation, and tensor transformations.
-- **Multi-Tenant System Design**: Designed a modular architecture delivering model inference across Streamlit web applications, FastAPI microservices, and command-line interfaces.
-- **MLOps Best Practices**: Implemented containerization (`Docker`), automated testing suites (`PyTest`), and continuous integration workflows (`GitHub Actions`).
+Access Streamlit UI at `http://localhost:8501` and FastAPI at `http://localhost:8000`.
