@@ -38,44 +38,29 @@ The deep learning inference engine (`src/classifier.py`) loads a trained Keras m
 
 ## 🏗️ High-Level System Architecture
 
-```mermaid
-graph TD
-    subgraph Client Interfaces ["🌐 Multi-Interface Execution Layer"]
-        UI["Streamlit Web Studio\n(app.py)"]
-        API["FastAPI REST Service\n(api.py)"]
-        CLI["CLI Utility\n(cli.py)"]
-    end
-
-    subgraph Preprocessing ["🖼️ Digital Image Processing (src/image_processor.py)"]
-        ImageLoad["load_image()\n(PIL RGB Conversion)"]
-        ResizeTensor["process_image_for_inference()\n(BILINEAR 180x180 Resample)"]
-        ExpandBatch["np.expand_dims()\nTensor Shape: (1, 180, 180, 3)"]
-        
-        ImageLoad --> ResizeTensor --> ExpandBatch
-    end
-
-    subgraph InferenceEngine ["🧠 TensorFlow Keras Engine (src/classifier.py)"]
-        KerasModel["FlowerClassifier Model\n(flower_model.keras - sequential_3)"]
-        RawPredict["model.predict(batch_array)"]
-        SoftmaxCalc["tf.nn.softmax()\n(Probability Distribution)"]
-        TopKRank["Top-K Ranking & Color Mapping"]
-        
-        KerasModel --> RawPredict --> SoftmaxCalc --> TopKRank
-    end
-
-    subgraph OutputPayload ["📊 Botanical Payload Synthesis"]
-        JSONResult["Prediction Payload\n- Top Class & Confidence %\n- Top-K Ranked Classes\n- Scientific Metadata (Family/Taxonomy)\n- Color Tokens & RGB Distribution"]
-    end
-
-    UI --> ImageLoad
-    API --> ImageLoad
-    CLI --> ImageLoad
-
-    ExpandBatch --> KerasModel
-    TopKRank --> JSONResult
-    JSONResult --> UI
-    JSONResult --> API
-    JSONResult --> CLI
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│                    MULTI-INTERFACE EXECUTION LAYER                     │
+│    (Streamlit Web Studio [app.py] / FastAPI [api.py] / CLI [cli.py])   │
+└──────────────────────────────────┬─────────────────────────────────────┘
+                                   │ Raw Image Stream / File Path
+                                   ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│             DIGITAL IMAGE PROCESSING (src/image_processor.py)           │
+│   (load_image() ➔ BILINEAR 180x180 Resample ➔ Tensor (1, 180, 180, 3)) │
+└──────────────────────────────────┬─────────────────────────────────────┘
+                                   │ Normalized 4D Tensor Batch
+                                   ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│             TENSORFLOW KERAS ENGINE (src/classifier.py)                 │
+│   (FlowerClassifier ➔ model.predict() ➔ tf.nn.softmax ➔ Top-K Rank)   │
+└──────────────────────────────────┬─────────────────────────────────────┘
+                                   │ Calculated Probabilities & Metadata
+                                   ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                   BOTANICAL PAYLOAD SYNTHESIS                          │
+│   (Top Class & Confidence % / Scientific Metadata / Color Tokens)      │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -178,7 +163,7 @@ tf-flower-classifier/
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/tf-flower-classifier.git
+git clone https://github.com/m-ali-swe/tf-flower-classifier.git
 cd tf-flower-classifier
 
 # Create virtual environment
