@@ -13,6 +13,30 @@ The system utilizes a custom **12-Layer Convolutional Neural Network (CNN)** (`s
 
 ---
 
+## 🖼️ Application Interface Gallery
+
+### 1. FloraVision Web Studio & Navigation
+Interactive Streamlit application entry point featuring navigation sidebar, live model status, and image upload triggers.
+
+![FloraVision Studio Interface](public/hero-preview.png)
+
+### 2. Deep Learning Classification Studio & Botanical Metadata
+Real-time CNN inference displaying top prediction (*Roses 99.85%*), probability distribution progress bars across 5 classes, and detailed botanical metadata.
+
+![Classification Studio Preview](public/classification-studio.png)
+
+### 3. Digital Image Processing (DIP) Analysis Lab
+NumPy DIP diagnostics displaying spatial dimensions, aspect ratios, intensity mean/std metrics, grayscale luminance, RGB channel decomposition, and Sobel-like edge maps.
+
+![DIP Analysis Lab Preview](public/dip-analysis-lab.png)
+
+### 4. Model Topology & Architectural Specifications
+Model inspector displaying 12-layer Keras CNN topology, input/output tensor shapes, and total trainable parameter metrics (3.98M parameters).
+
+![Model Architecture Preview](public/model-architecture.png)
+
+---
+
 ## 🔬 CNN Model Architecture & Layer Topology
 
 The deep learning inference engine (`src/classifier.py`) loads a trained Keras model (`flower_model.keras`) with an input shape of `(180, 180, 3)` (RGB). The 12-layer sequential CNN topology extracts spatial features through progressive 2D convolutions and max-pooling filters:
