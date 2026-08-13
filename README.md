@@ -204,11 +204,14 @@ uvicorn api:app --reload --port 8000
 ### 4. Running CLI Inference
 
 ```bash
-# Predict a single image with top-3 rankings
-python cli.py predict path/to/flower.jpg --top-k 3
+# Classify a single image (Top-3 rankings)
+python cli.py -i path/to/flower.jpg -k 3
 
-# View model architecture summary via CLI
-python cli.py info
+# Classify an entire directory of images in batch mode
+python cli.py -d path/to/image_folder -k 3
+
+# Output predictions as formatted JSON or save to file
+python cli.py -i path/to/flower.jpg --json -o output.json
 ```
 
 ---
